@@ -1,12 +1,13 @@
 const express = require("express");
 const https = require("https");
-const app = express();
+const http = require("http");
+const webSocketServer = require("websocket").server;
 const bodyParser = require("body-parser");
-const webhook = require("./webhook");
 
-app.set("view engine", "ejs");
+const app = express();
 app.use(bodyParser.json());
-app.use(express.static("Public"));
+const webSocketsServerPort = 8000;
+var clientList = [];
 
 //handled CORS
 app.use((req, res, next) => {
@@ -20,12 +21,33 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/index.html");
+app.post("/webhook", function (req, res) {
+  console.log(req.body);
+  clientList.forEach((client) => {
+    client.send(JSON.stringify(req.body));
+  });
+  res.send("OK");
 });
 
-app.use("/webhook", webhook);
+const server = app.listen(
+  process.env.PORT || webSocketsServerPort,
+  function () {
+    console.log("server listening on port 8000");
+  }
+);
 
-app.listen(process.env.PORT || 3000, function () {
-  console.log("server started");
+const wsServer = new webSocketServer({
+  httpServer: server,
+});
+
+wsServer.on("request", function (request) {
+  var connection = request.accept("echo-protocol", request.origin);
+  console.log(new Date() + " Connection accepted.");
+  clientList.push(connection);
+  connection.sendUTF("hello");
+  connection.on("close", function (reasonCode, description) {
+    console.log(
+      new Date() + " Peer " + connection.remoteAddress + " disconnected."
+    );
+  });
 });
