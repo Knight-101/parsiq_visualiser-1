@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactFlow, { Background, Controls } from "react-flow-renderer";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+import axios from "axios";
 
 import "./App.css";
 import StickyHeadTable from "./components/data-table";
@@ -11,6 +12,28 @@ var client = new W3CWebSocket(
 );
 
 function App() {
+  const [tableData, setTableData] = useState([]);
+  const [tid, setTid] = useState(1);
+  const [arrowid, setArrowid] = useState("a");
+  // const [xpos, setXpos] = useState(400);
+  const [ypos, setYpos] = useState(150);
+  const baseref = useRef();
+  // const [addressMap, setAddressMap] = useState([
+  //   { add: baseref, y_v: 50, x_v: 100 },
+  // ]);
+  const [addlist, setAddlist] = useState([baseref]);
+  const styles = {
+    border: "1px solid #777",
+    padding: 10,
+    borderRadius: "10px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "150px",
+  };
+
+  const [elements, setElements] = useState([]);
+
   useEffect(() => {
     client.onerror = function (err) {
       console.log(err);
@@ -24,61 +47,60 @@ function App() {
       console.log("echo-protocol Client Closed");
     };
 
-    client.onmessage = function (e) {
+    client.onmessage = async function (e) {
       console.log(JSON.parse(e.data));
       const data = JSON.parse(e.data);
       const fromAdd = data.from;
       const toAdd = data.to;
       const value = data.value;
+      await axios
+        .get(`${process.env.REACT_APP_URL}`, {
+          headers: {
+            Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
+          },
+        })
+        .then(async (res) => {
+          console.log("---------------------");
+          console.log(res.data);
+
+          const addresses = res.data;
+          for (let i = 0; i < addresses.length; i++) {
+            if (toAdd !== addresses[i].address) {
+              var data = JSON.stringify([
+                {
+                  address: toAdd,
+                },
+              ]);
+
+              var config = {
+                method: "post",
+                url: `${process.env.REACT_APP_URL}`,
+                headers: {
+                  Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
+                  "Content-Type": "application/json",
+                },
+                data: data,
+              };
+              await axios(config)
+                .then((response) => {
+                  console.log(JSON.stringify(response.data));
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            }
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      setArrowid((id) => id + "a");
+      // setXpos((xpos) => xpos + 300);
+      setYpos((ypos) => ypos + 100);
       updateChart(fromAdd, toAdd, value);
     };
-    return () => {
-      client.close();
-    };
-  }, []);
-  const styles = {
-    border: "1px solid #777",
-    padding: 10,
-    borderRadius: "10px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "150px",
-  };
-
-  const [elements, setElements] = useState([
-    {
-      id: "0x2cdab8593656638ab89b4c8931fe50f4afb1f636",
-      type: "default", // input node
-      preval: "",
-      node: true,
-      sourcePosition: "right",
-      targetPosition: "left",
-      data: {
-        label: <div>0x2CDab8593656638ab89B4c8931fE50f4afB1F636</div>,
-      },
-      position: { x: 100, y: 50 },
-      style: styles,
-    },
-  ]);
-
-  useEffect(() => {
-    console.log("important");
-    console.log(elements);
-    console.log("important");
-  }, [elements]);
-
-  const [tableData, setTableData] = useState([]);
-  const [tid, setTid] = useState(1);
-  const [arrowid, setArrowid] = useState("a");
-  const [xpos, setXpos] = useState(400);
-  const [ypos, setYpos] = useState(150);
-  const [addressMap, setAddressMap] = useState([
-    { add: "0x2cdab8593656638ab89b4c8931fe50f4afb1f636", y_v: 50, x_v: 100 },
-  ]);
-  const [addlist, setAddlist] = useState([
-    "0x2cdab8593656638ab89b4c8931fe50f4afb1f636",
-  ]);
+  });
 
   function check(val, arr) {
     for (let i = 0; i < arr.length; i++) {
@@ -87,6 +109,18 @@ function App() {
       }
     }
     return false;
+  }
+
+  function shorten(str) {
+    return str.slice(0, 5) + "..." + str.slice(-5);
+  }
+
+  function getpreXpos(arr, prepos) {
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].id === prepos) {
+        return arr[i].position.x + 300;
+      }
+    }
   }
 
   const updateChart = (from, to, value) => {
@@ -127,8 +161,7 @@ function App() {
       );
 
       setTid(tid + 1);
-
-      setArrowid(arrowid + "a");
+      setArrowid((id) => id + "a");
     } else {
       setElements((els) =>
         els.concat(
@@ -137,16 +170,17 @@ function App() {
             preval: inputval,
             node: true,
             // you can also pass a React component as a label
-            data: { label: outputval },
+            data: { label: shorten(outputval) },
             sourcePosition: "right",
             targetPosition: "left",
-            position: { x: xpos, y: ypos },
+            position: { x: getpreXpos(elements, inputval), y: ypos },
           },
           {
             id: arrowid,
             source: inputval,
-            // node: false,
+            node: false,
             target: outputval,
+            className: "edge-name-test",
             animated: true,
             label: valueval,
             labelBgStyle: {
@@ -172,18 +206,16 @@ function App() {
 
       setTid(tid + 1);
 
-      setAddressMap(
-        (els) => els.concat({ add: outputval, y_v: ypos, x_v: xpos }),
-        console.log(addressMap)
-      );
+      // setAddressMap(
+      //   (els) => els.concat({ add: outputval, y_v: ypos, x_v: xpos }),
+      //   console.log(addressMap)
+      // );
 
-      setArrowid(arrowid + "a");
-      setXpos(xpos + 300);
-      setYpos(ypos + 100);
       setAddlist([...addlist, outputval]);
+
+      console.log(tid);
     }
   };
-
   const flow = [
     <ReactFlow
       elements={elements}
@@ -204,14 +236,46 @@ function App() {
     dtype ? setDtype(false) : setDtype(true);
   };
 
+  const setBaseval = () => {
+    const rootNode = baseref.current.value;
+
+    setElements((els) =>
+      els.concat([
+        {
+          id: rootNode,
+          type: "default", // input node
+          preval: "",
+          node: true,
+          sourcePosition: "right",
+          targetPosition: "left",
+          data: {
+            label: <div>{shorten(rootNode)}</div>,
+          },
+          position: { x: 100, y: 50 },
+          style: styles,
+        },
+      ])
+    );
+  };
+
   return (
     <div className="screen">
       {/* from <input ref={inputRef} />
       to <input ref={outputRef} />
       value <input ref={valueref} /> */}
-      <button onClick={updateChart}>Submit</button>
-      <button onClick={updateType}>change view</button>
-      <div className="control-area">Display Text</div>
+
+      <div className="company">Parsiq-Visualiser</div>
+      <div className="control-area">
+        <div className="search-bar">
+          <input type="text" className="base-input" ref={baseref}></input>
+          <button className="base-fetch" onClick={setBaseval}>
+            fetch
+          </button>
+        </div>
+        <div className="toggle-area">
+          <button onClick={updateType}>change view</button>
+        </div>
+      </div>
       <div className="flow-container">
         <div className="main-display">
           {/* <ReactFlow

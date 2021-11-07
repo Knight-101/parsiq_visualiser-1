@@ -1,24 +1,22 @@
-import * as React from 'react';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
+import * as React from "react";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
 
 const columns = [
-  { id: 'from', label: 'From', minWidth: 170 },
-  { id: 'to', label: 'To', minWidth: 100 },
+  { id: "from", label: "From", minWidth: 170 },
+  { id: "to", label: "To", minWidth: 170 },
   {
-    id: 'amt',
-    label: 'Value',
-    minWidth: 170,
-    align: 'right',
-    format: (value) => value.toLocaleString('en-US'),
+    id: "amt",
+    label: "Value",
+    minWidth: 100,
+    format: (value) => value.toLocaleString("en-US"),
   },
-  
 ];
 
 const StickyHeadTable = (props) => {
@@ -35,7 +33,7 @@ const StickyHeadTable = (props) => {
   };
 
   return (
-    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+    <Paper sx={{ width: "100%", overflow: "hidden" }}>
       <TableContainer sx={{ maxHeight: "50vh" }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
@@ -61,7 +59,7 @@ const StickyHeadTable = (props) => {
                       const value = row[column.id];
                       return (
                         <TableCell key={column.id} align={column.align}>
-                          {column.format && typeof value === 'number'
+                          {column.format && typeof value === "number"
                             ? column.format(value)
                             : value}
                         </TableCell>
@@ -84,6 +82,6 @@ const StickyHeadTable = (props) => {
       />
     </Paper>
   );
-}
+};
 
 export default StickyHeadTable;
