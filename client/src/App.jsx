@@ -53,47 +53,6 @@ function App() {
       const fromAdd = data.from;
       const toAdd = data.to;
       const value = data.value;
-      await axios
-        .get(`${process.env.REACT_APP_URL}`, {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-          },
-        })
-        .then(async (res) => {
-          console.log("---------------------");
-          console.log(res.data);
-
-          const addresses = res.data;
-          for (let i = 0; i < addresses.length; i++) {
-            if (toAdd !== addresses[i].address) {
-              var data = JSON.stringify([
-                {
-                  address: toAdd,
-                },
-              ]);
-
-              var config = {
-                method: "post",
-                url: `${process.env.REACT_APP_URL}`,
-                headers: {
-                  Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-                  "Content-Type": "application/json",
-                },
-                data: data,
-              };
-              await axios(config)
-                .then((response) => {
-                  console.log(JSON.stringify(response.data));
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-            }
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
 
       setArrowid((id) => id + "a");
       // setXpos((xpos) => xpos + 300);
