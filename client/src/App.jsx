@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactFlow, { Background, Controls } from "react-flow-renderer";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import axios from "axios";
 
 import "./App.css";
 import StickyHeadTable from "./components/data-table";
