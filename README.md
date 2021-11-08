@@ -1,9 +1,9 @@
 <h1>Parsiq Trigger Code</h1>
 
 ```
-stream TransactionSurveillance<br>
+stream TransactionSurveillance
 from Transfers
-where @from in InterestAddresses<br>
+where @from in InterestAddresses
 process
   let txInfo = { txHash: @tx_hash }
 
@@ -11,6 +11,7 @@ process
 end
 ```
 Project - https://staging.parsiq.net/monitoring/projects/5ecdca23-a866-4b08-a626-1db6ccaf6057
+Video Demo - https://youtu.be/w2YV3RyuXiM
 <hr>
 This app is deployed at https://parsiq-visualiser.netlify.app/
 <hr>
