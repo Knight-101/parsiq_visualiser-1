@@ -4,7 +4,6 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 
 import "./App.css";
 import StickyHeadTable from "./components/data-table";
-// import Elm from "./components/node-element";
 var client = new W3CWebSocket(
   "wss://salty-headland-19846.herokuapp.com/",
   "echo-protocol"
@@ -14,21 +13,19 @@ function App() {
   const [tableData, setTableData] = useState([]);
   const [tid, setTid] = useState(1);
   const [arrowid, setArrowid] = useState("a");
-  // const [xpos, setXpos] = useState(400);
   const [ypos, setYpos] = useState(150);
   const baseref = useRef();
-  // const [addressMap, setAddressMap] = useState([
-  //   { add: baseref, y_v: 50, x_v: 100 },
-  // ]);
   const [addlist, setAddlist] = useState([]);
   const styles = {
-    border: "1px solid #777",
+    border: "2px solid #0975f7",
     padding: 0,
     borderRadius: "10px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     width: "150px",
+    fontSize: "15px",
+    backgroundColor: "#ffffff"
   };
 
   const [elements, setElements] = useState([]);
@@ -49,16 +46,15 @@ function App() {
     };
 
     client.onmessage = async function (e) {
-      console.log(JSON.parse(e.data));
       const data = JSON.parse(e.data);
       const fromAdd = data.from;
       const toAdd = data.to;
       const value = data.value;
+      const txn = data.txInfo.txHash
 
       setArrowid((id) => id + "a");
-      // setXpos((xpos) => xpos + 300);
       setYpos((ypos) => ypos + 100);
-      updateChart(fromAdd, toAdd, value);
+      updateChart(fromAdd, toAdd, value, txn);
     };
   });
 
@@ -83,55 +79,17 @@ function App() {
     }
   }
 
-  function swapItem(arr, index, item) {
-    if (index > -1) {
-      arr.splice(index, 1);
-      arr.concat(item);
-    }
-    return arr;
-  }
-
-  function changeColours(inv, outv, arr) {
-    console.log("previous");
-    console.log(arr);
-
-    var temp = [...arr];
-
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i].id === inv) {
-        console.log(arr[i].style);
-        temp[i].style.border = "5px solid green";
-        console.log(temp);
-      } else if (arr[i].id === outv) {
-        console.log("found output");
-        temp[i].style.border = "5px solid red";
-      } else if (arr[i].node) {
-        console.log("oops");
-        temp[i].style.border = "5px solid grey";
-      }
-    }
-
-    console.log(temp);
-    return temp;
-  }
 
   const [mode, setMode] = useState(false);
   var source = mode
-    ? "https://img.icons8.com/ios/25/000000/table-1.png"
-    : "https://img.icons8.com/ios/25/000000/serial-tasks.png";
-
-  const updateChart = (from, to, value) => {
-    // update xpos, ypos if value is new, else keep pos as the default pos in index
-    //loopback effect, might be too convoluted
-    //or
-    //make list of address and cesp y level, unique address on each y level, with id != address as that creates loopback
+    ? "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAABmJLR0QA/wD/AP+gvaeTAAAAbElEQVRIiWNgGC6AEcbgLP3+loGBQYiKZr/93s0pgiLCWfr9PzE6yVHHRJLbyASjlpAEWJA5nGXfygnq+E+8OqyWMPxjEiSomfE/8erQwWgSHlmWjCZhktQNn4gfPpYgp663VI78t+Q5aTADAJRRNfRRTNkmAAAAAElFTkSuQmCC"
+    : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAABmJLR0QA/wD/AP+gvaeTAAABfElEQVRIie2UvU4CQRSFzx1AGCISpCDGVp7ERjtLOx/AyuAkkFgbfhLpLH0Ga2tjfAcoxcQG48YwC1nmWhjWYbPgoqMVJ9nm5Lt7752dPcBaK4jy5/qSCTUAG5Y/IUJn1JYXMyMpFyup9Hjr7G3b9goNryyV9n/CxW4ilWbdkRTTnEFcDw2m5rccYwpBj7ol721GLB3BiFL4JOEgKjC4ySv/NDrJuNDwyra36LiScFnlV6XST7aXJkInCDLPUunwgwYBJgS0bTApN+7kelLp3bnaJYewkrJ1f09MzREIKTA1QVwHY2pS4tZZE6l0H8AdmLyZx8RFAvZd9fi8ZQv85bfLkf6lSdrZmxh9qfwrkHn58kQF4J6zTQzRATO/wogSmJowosTgoQEd/klARqMqzYRaJpjseN3icGYWGl45CDIDAGFxUi6r/CrAA7up04Akpk1mHJOg7qiduw43iRbNyQ5Giv0N5jhD/E4pPhm15EN0EqcBGSfnAbnWr/UBDrv65ldjhLwAAAAASUVORK5CYII=";
+  const updateChart = (from, to, value, txn) => {
     var inputval = from.toLowerCase();
     var outputval = to.toLowerCase();
     var valueval = value;
 
     if (check(outputval, addlist)) {
-      console.log("in list");
-      console.log(outputval, addlist);
       setElements((els) =>
         els.concat({
           id: arrowid,
@@ -139,13 +97,11 @@ function App() {
           target: outputval,
           node: false,
           animated: true,
-          // label: valueval,
-          // labelBgStyle: { fill: "#fff", color: "#ffffff", fillOpacity: 0.7 },
           arrowHeadType: "arrowclosed",
         })
       );
 
-      setCurrentFlow({ from: inputval, to: outputval, amt: valueval });
+      setCurrentFlow({ from: inputval, to: outputval, amt: valueval, hash: txn });
 
       setTableData((data) =>
         data.concat({
@@ -154,13 +110,12 @@ function App() {
           from: inputval,
           to: outputval,
           amt: valueval,
+          hash: txn,
         })
       );
 
       setTid(tid + 1);
       setArrowid((id) => id + "a");
-
-      changeColours(inputval, outputval, elements);
     } else {
       setElements((els) =>
         els.concat(
@@ -168,7 +123,6 @@ function App() {
             id: outputval,
             preval: inputval,
             node: true,
-            // you can also pass a React component as a label
             data: {
               label: (
                 <div className="node-test">
@@ -197,18 +151,12 @@ function App() {
                 </div>
               ),
             },
-            // labelBgStyle: {
-            //   fill: "#333",
-            //   color: "#ffffff",
-            //   fillOpacity: 0.8,
-            //   fontWeight: 800,
-            // },
             arrowHeadType: "arrowclosed",
           }
         )
       );
 
-      setCurrentFlow({ from: inputval, to: outputval, amt: valueval });
+      setCurrentFlow({ from: inputval, to: outputval, amt: valueval, hash: txn });
 
       setTableData((data) =>
         data.concat({
@@ -217,19 +165,13 @@ function App() {
           from: inputval,
           to: outputval,
           amt: valueval,
+          hash: txn,
         })
       );
 
       setTid(tid + 1);
 
-      // setAddressMap(
-      //   (els) => els.concat({ add: outputval, y_v: ypos, x_v: xpos }),
-      //   console.log(addressMap)
-      // );
-
       setAddlist([...addlist, outputval]);
-      setElements((els) => changeColours(inputval, outputval, els));
-      console.log(tid);
     }
   };
   const flow = [
@@ -239,8 +181,8 @@ function App() {
       nodesConnectable={false}
       nodesDraggable={true}
     >
-      <Background color="#aaa" gap={15} />
-      <Controls />
+      <Background gap={15}/>
+      <Controls/>
     </ReactFlow>,
   ];
 
@@ -259,7 +201,7 @@ function App() {
     setElements([
       {
         id: rootNode,
-        type: "default", // input node
+        type: "default", 
         preval: "",
         node: true,
         sourcePosition: "right",
@@ -277,50 +219,53 @@ function App() {
       },
     ]);
 
-    setAddlist([...addlist, rootNode]);
+    setTableData([])
+
+    setAddlist([]);
+    setYpos(150)
   };
 
   return (
     <div className="screen">
-      {/* from <input ref={inputRef} />
-      to <input ref={outputRef} />
-      value <input ref={valueref} /> */}
 
-      <div className="company">Parsiq-Visualiser</div>
+
+      <div className="company">pArsiq-VisuALiser</div>
       <div className="control-area">
         <div className="search-bar">
           <input type="text" className="base-input" ref={baseref}></input>
           <button className="base-fetch" onClick={setBaseval}>
-            fetch
+            <div style={{border: "0px solid red", padding: "6px 0 0 2px"}}>
+            <img alt="start" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAABmJLR0QA/wD/AP+gvaeTAAACM0lEQVRIie2XP2hTURSHv5NW8t4LtWaQTq2BdlNH7SKog6uLiOJuXVWU1EUSXKpJq6t1Fqk6CSIqLg4idXVPi4itiMmguYlN73Hrewl9eX+S4uKZ7r3nd37fudz37uMJSWNO97nj5riKFABEtGbq7ieWZSuJjcQVjs838n86zi3EXgY50GNTR1nOdsxC40G+MTRwrtg+aq19ARQipLURzZz9Vc1+HhjsFs0UllVgIk6TwCbbeswseV/6iTKRnVke9UB/qlJSOKXKaRHKIPVAfkJH5WGkb7+ke6M5i8jHwNK6Wk62Ft31oM6ZNwXZ5j0w6TvrrLnnrYZ5R+w4cy44s8hcLxSgteCuiZUrXYvaXZsIrKKHA9Pv7Ur2bZi2OZZ9DfzYqUWPpAYLHPQn8hVEQ8UlsYjsPFBdtUnBiATztq+2V9NdmxC8h/HPwKNpityiOYHlMaBk9JK5631I6pFux5YSMAUcEivlNBbpwOJ/JFQkP3ywVeNPdCzSTXV/YNxMDxbWfCNm3OvNyTCpWzRTwIxfSi01WOFdl3YksxgqtrJE4O633bXJwC11ngGbgVbO92kzeDdvtHLO89RgqvIb9Fpfze5NXKUkA5wxYCreE1VKsZHKbVPxVqJ0sV6nVtUtg14ENkJFwjdUL7Sq7p04nrHfY1PxVkzOmQ7NbznTpuo9jeuX7ALpd273xYTmBgYPMf6D44VqZ9fxXoNVeRUYv0zjEfvfqQct2ZvtMwDtivMmjcNfV1+81hW6Ne4AAAAASUVORK5CYII="></img>          </div>
           </button>
         </div>
         <div className="toggle-area">
           <button onClick={updateType} className="sw-button">
-            <img src={source} alt="" />
+            <div style={{ paddingTop: "3px" }}>
+              <img src={source} alt="" />
+            </div>
           </button>
         </div>
       </div>
       <div className="flow-container">
         <div className="main-display">
-          {/* <ReactFlow
-            elements={elements}
-            elementsSelectable={false}
-            nodesConnectable={false}
-            nodesDraggable={true}
-          >
-            <Background color="#aaa" gap={15} />
-            <Controls />
-          </ReactFlow> */}
           {dtype ? table : flow}
           {dtype ? (
             false
           ) : (
             <div className="current-transaction">
-              to: {currentFlow.to}
-              <br />
-              from: {currentFlow.from}
-              <br />
-              value: {currentFlow.amt}
+
+              <div className="current-transaction-details">
+                <p><b>to : </b> {'\u00A0\u00A0\u00A0\u00A0'} {currentFlow.to}</p>
+              </div>
+
+              <div className="current-transaction-details">
+                <b>from :</b> {'\u00A0\u00A0'} {currentFlow.from}
+              </div>
+
+              <div className="current-transaction-details">
+                <b>value :</b> {'\u00A0'} {currentFlow.amt}
+              </div>
+              <div className="current-transaction-details">txnhash : {currentFlow.hash}</div>
             </div>
           )}
         </div>
