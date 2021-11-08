@@ -35,36 +35,32 @@ app.post("/webhook", async function (req, res) {
       },
     })
     .then(async (res) => {
-      console.log("---------------------");
       console.log(res.data);
 
       const addresses = res.data;
-      for (let i = 0; i < addresses.length; i++) {
-        if (toAdd !== addresses[i].address) {
-          var data = JSON.stringify([
-            {
-              address: toAdd,
-            },
-          ]);
+      if (!addresses.some((item) => item.address === toAdd)) {
+        var data = JSON.stringify([
+          {
+            address: toAdd,
+          },
+        ]);
 
-          var config = {
-            method: "post",
-            url: `${process.env.API_URL}`,
-            headers: {
-              Authorization: `Bearer ${process.env.API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            data: data,
-          };
-          await axios(config)
-            .then((response) => {
-              console.log(JSON.stringify(response.data));
-              console.log("Added");
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        }
+        var config = {
+          method: "post",
+          url: `${process.env.API_URL}`,
+          headers: {
+            Authorization: `Bearer ${process.env.API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          data: data,
+        };
+        await axios(config)
+          .then((response) => {
+            console.log("Address Added");
+          })
+          .catch((err) => {
+            console.log(err.response.data.message);
+          });
       }
     })
     .catch((err) => {
