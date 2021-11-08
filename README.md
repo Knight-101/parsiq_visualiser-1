@@ -1,5 +1,4 @@
 <h1>Parsiq Trigger Code</h1>
-<hr>
 stream TransactionSurveillance<br>
 from Transfers<br>
 where @from in InterestAddresses<br>
