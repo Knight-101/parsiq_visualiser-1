@@ -33,6 +33,8 @@ function App() {
 
   const [elements, setElements] = useState([]);
 
+  const [currentFlow, setCurrentFlow] = useState({});
+
   useEffect(() => {
     client.onerror = function (err) {
       console.log(err);
@@ -57,7 +59,6 @@ function App() {
       // setXpos((xpos) => xpos + 300);
       setYpos((ypos) => ypos + 100);
       updateChart(fromAdd, toAdd, value);
-      
     };
   });
 
@@ -85,40 +86,34 @@ function App() {
   function swapItem(arr, index, item) {
     if (index > -1) {
       arr.splice(index, 1);
-      arr.concat(item)
+      arr.concat(item);
     }
     return arr;
   }
 
-  function changeColours(inv, outv, arr){
-    console.log("previous")
-    console.log(arr)
+  function changeColours(inv, outv, arr) {
+    console.log("previous");
+    console.log(arr);
 
-    var temp =[...arr]
+    var temp = [...arr];
 
-    for(let i = 0; i<arr.length ; i++){
-      if (arr[i].id === inv){
-        console.log(arr[i].style)
-        temp[i].style.border = "5px solid green"
-        console.log(temp)
-      }
-      else if (arr[i].id === outv){
-        console.log("found output")
-        temp[i].style.border = "5px solid red"
-      }
-      else if (arr[i].node){
-        console.log("oops")
-        temp[i].style.border = "5px solid grey"
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].id === inv) {
+        console.log(arr[i].style);
+        temp[i].style.border = "5px solid green";
+        console.log(temp);
+      } else if (arr[i].id === outv) {
+        console.log("found output");
+        temp[i].style.border = "5px solid red";
+      } else if (arr[i].node) {
+        console.log("oops");
+        temp[i].style.border = "5px solid grey";
       }
     }
 
-    console.log(temp)
-    return(temp)
+    console.log(temp);
+    return temp;
   }
-
-
-
-
 
   const [mode, setMode] = useState(false);
   var source = mode
@@ -133,7 +128,6 @@ function App() {
     var inputval = from.toLowerCase();
     var outputval = to.toLowerCase();
     var valueval = value;
-
 
     if (check(outputval, addlist)) {
       console.log("in list");
@@ -151,7 +145,7 @@ function App() {
         })
       );
 
-      // changeClrs(inputval)
+      setCurrentFlow({ from: inputval, to: outputval, amt: valueval });
 
       setTableData((data) =>
         data.concat({
@@ -166,8 +160,7 @@ function App() {
       setTid(tid + 1);
       setArrowid((id) => id + "a");
 
-      changeColours(inputval, outputval, elements)
-
+      changeColours(inputval, outputval, elements);
     } else {
       setElements((els) =>
         els.concat(
@@ -179,7 +172,8 @@ function App() {
             data: {
               label: (
                 <div className="node-test">
-                  {shorten(outputval)} <div className = "hover-display">{outputval}</div>
+                  {shorten(outputval)}{" "}
+                  <div className="hover-display">{outputval}</div>
                 </div>
               ),
             },
@@ -198,7 +192,8 @@ function App() {
             data: {
               label: (
                 <div className="node-test">
-                  {shorten(valueval)} <div className = "hover-display">{valueval}</div>
+                  {shorten(valueval)}{" "}
+                  <div className="hover-display">{valueval}</div>
                 </div>
               ),
             },
@@ -212,6 +207,8 @@ function App() {
           }
         )
       );
+
+      setCurrentFlow({ from: inputval, to: outputval, amt: valueval });
 
       setTableData((data) =>
         data.concat({
@@ -231,7 +228,7 @@ function App() {
       // );
 
       setAddlist([...addlist, outputval]);
-      setElements((els) => changeColours(inputval, outputval, els))
+      setElements((els) => changeColours(inputval, outputval, els));
       console.log(tid);
     }
   };
@@ -270,7 +267,8 @@ function App() {
         data: {
           label: (
             <div className="node-test">
-              {shorten(rootNode)} <div className = "hover-display">{rootNode}</div>
+              {shorten(rootNode)}{" "}
+              <div className="hover-display">{rootNode}</div>
             </div>
           ),
         },
@@ -314,6 +312,17 @@ function App() {
             <Controls />
           </ReactFlow> */}
           {dtype ? table : flow}
+          {dtype ? (
+            false
+          ) : (
+            <div className="current-transaction">
+              to: {currentFlow.to}
+              <br />
+              from: {currentFlow.from}
+              <br />
+              value: {currentFlow.amt}
+            </div>
+          )}
         </div>
       </div>
     </div>
