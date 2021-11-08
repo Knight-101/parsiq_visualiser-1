@@ -14,9 +14,10 @@ const columns = [
   {
     id: "amt",
     label: "Value",
-    minWidth: 100,
+    minWidth: 75,
     format: (value) => value.toLocaleString("en-US"),
   },
+  {id: "hash", label: "txnHash", minWidth: 170}
 ];
 
 const StickyHeadTable = (props) => {
