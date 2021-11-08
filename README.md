@@ -10,7 +10,7 @@ process
   emit { @from, @to, @value, txInfo }
 end
 ```
-Project - https://staging.parsiq.net/monitoring/projects/5ecdca23-a866-4b08-a626-1db6ccaf6057
+Project - https://staging.parsiq.net/monitoring/projects/5ecdca23-a866-4b08-a626-1db6ccaf6057 <br>
 Video Demo - https://youtu.be/w2YV3RyuXiM
 <hr>
 This app is deployed at https://parsiq-visualiser.netlify.app/
