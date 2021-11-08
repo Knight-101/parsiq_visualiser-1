@@ -195,7 +195,7 @@ function App() {
   };
 
   const setBaseval = () => {
-    const rootNode = baseref.current.value;
+    const rootNode = baseref.current.value.toLowerCase();
 
     setElements((els) =>
       els.concat([
