@@ -20,10 +20,10 @@ function App() {
   // const [addressMap, setAddressMap] = useState([
   //   { add: baseref, y_v: 50, x_v: 100 },
   // ]);
-  const [addlist, setAddlist] = useState([baseref]);
+  const [addlist, setAddlist] = useState([]);
   const styles = {
     border: "1px solid #777",
-    padding: 10,
+    padding: 0,
     borderRadius: "10px",
     display: "flex",
     justifyContent: "center",
@@ -57,6 +57,7 @@ function App() {
       // setXpos((xpos) => xpos + 300);
       setYpos((ypos) => ypos + 100);
       updateChart(fromAdd, toAdd, value);
+      
     };
   });
 
@@ -81,16 +82,58 @@ function App() {
     }
   }
 
+  function swapItem(arr, index, item) {
+    if (index > -1) {
+      arr.splice(index, 1);
+      arr.concat(item)
+    }
+    return arr;
+  }
+
+  function changeColours(inv, outv, arr){
+    console.log("previous")
+    console.log(arr)
+
+    var temp =[...arr]
+
+    for(let i = 0; i<arr.length ; i++){
+      if (arr[i].id === inv){
+        console.log(arr[i].style)
+        temp[i].style.border = "5px solid green"
+        console.log(temp)
+      }
+      else if (arr[i].id === outv){
+        console.log("found output")
+        temp[i].style.border = "5px solid red"
+      }
+      else if (arr[i].node){
+        console.log("oops")
+        temp[i].style.border = "5px solid grey"
+      }
+    }
+
+    console.log(temp)
+    return(temp)
+  }
+
+
+
+
+
+  const [mode, setMode] = useState(false);
+  var source = mode
+    ? "https://img.icons8.com/ios/25/000000/table-1.png"
+    : "https://img.icons8.com/ios/25/000000/serial-tasks.png";
+
   const updateChart = (from, to, value) => {
     // update xpos, ypos if value is new, else keep pos as the default pos in index
     //loopback effect, might be too convoluted
     //or
     //make list of address and cesp y level, unique address on each y level, with id != address as that creates loopback
-    var inputval = from;
-    var outputval = to;
+    var inputval = from.toLowerCase();
+    var outputval = to.toLowerCase();
     var valueval = value;
 
-    console.log(tableData);
 
     if (check(outputval, addlist)) {
       console.log("in list");
@@ -102,11 +145,13 @@ function App() {
           target: outputval,
           node: false,
           animated: true,
-          label: valueval,
-          labelBgStyle: { fill: "#fff", color: "#ffffff", fillOpacity: 0.7 },
+          // label: valueval,
+          // labelBgStyle: { fill: "#fff", color: "#ffffff", fillOpacity: 0.7 },
           arrowHeadType: "arrowclosed",
         })
       );
+
+      // changeClrs(inputval)
 
       setTableData((data) =>
         data.concat({
@@ -120,6 +165,9 @@ function App() {
 
       setTid(tid + 1);
       setArrowid((id) => id + "a");
+
+      changeColours(inputval, outputval, elements)
+
     } else {
       setElements((els) =>
         els.concat(
@@ -128,10 +176,17 @@ function App() {
             preval: inputval,
             node: true,
             // you can also pass a React component as a label
-            data: { label: shorten(outputval) },
+            data: {
+              label: (
+                <div className="node-test">
+                  {shorten(outputval)} <div className = "hover-display">{outputval}</div>
+                </div>
+              ),
+            },
             sourcePosition: "right",
             targetPosition: "left",
             position: { x: getpreXpos(elements, inputval), y: ypos },
+            style: styles,
           },
           {
             id: arrowid,
@@ -140,13 +195,19 @@ function App() {
             target: outputval,
             className: "edge-name-test",
             animated: true,
-            label: valueval,
-            labelBgStyle: {
-              fill: "#333",
-              color: "#ffffff",
-              fillOpacity: 0.8,
-              fontWeight: 800,
+            data: {
+              label: (
+                <div className="node-test">
+                  {shorten(valueval)} <div className = "hover-display">{valueval}</div>
+                </div>
+              ),
             },
+            // labelBgStyle: {
+            //   fill: "#333",
+            //   color: "#ffffff",
+            //   fillOpacity: 0.8,
+            //   fontWeight: 800,
+            // },
             arrowHeadType: "arrowclosed",
           }
         )
@@ -170,7 +231,7 @@ function App() {
       // );
 
       setAddlist([...addlist, outputval]);
-
+      setElements((els) => changeColours(inputval, outputval, els))
       console.log(tid);
     }
   };
@@ -192,28 +253,33 @@ function App() {
 
   const updateType = () => {
     dtype ? setDtype(false) : setDtype(true);
+    setMode(mode ? false : true);
   };
 
   const setBaseval = () => {
     const rootNode = baseref.current.value.toLowerCase();
 
-    setElements((els) =>
-      els.concat([
-        {
-          id: rootNode,
-          type: "default", // input node
-          preval: "",
-          node: true,
-          sourcePosition: "right",
-          targetPosition: "left",
-          data: {
-            label: <div>{shorten(rootNode)}</div>,
-          },
-          position: { x: 100, y: 50 },
-          style: styles,
+    setElements([
+      {
+        id: rootNode,
+        type: "default", // input node
+        preval: "",
+        node: true,
+        sourcePosition: "right",
+        targetPosition: "left",
+        data: {
+          label: (
+            <div className="node-test">
+              {shorten(rootNode)} <div className = "hover-display">{rootNode}</div>
+            </div>
+          ),
         },
-      ])
-    );
+        position: { x: 100, y: 50 },
+        style: styles,
+      },
+    ]);
+
+    setAddlist([...addlist, rootNode]);
   };
 
   return (
@@ -231,7 +297,9 @@ function App() {
           </button>
         </div>
         <div className="toggle-area">
-          <button onClick={updateType}>change view</button>
+          <button onClick={updateType} className="sw-button">
+            <img src={source} alt="" />
+          </button>
         </div>
       </div>
       <div className="flow-container">
