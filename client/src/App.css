@@ -84,6 +84,17 @@
   background-color: green;
 }
 
+.current-transaction {
+  z-index: 999;
+  background-color: white;
+  width: 400px;
+  height: 100px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translate(-25%, -75%);
+}
+
 .node-test {
   background-color: none;
   width: 100%;
@@ -105,4 +116,3 @@
   transform: translateX(-50%) translateY(150%);
   transition: 0.2s;
 }
-
