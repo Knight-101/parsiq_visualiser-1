@@ -72,6 +72,53 @@ app.post("/webhook", async function (req, res) {
   res.send("OK");
 });
 
+app.post("/add", async function (req, res) {
+  console.log(req.body);
+  const fromAdd = req.body.add;
+  await axios
+    .get(`${process.env.API_URL}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.API_KEY}`,
+      },
+    })
+    .then(async (res) => {
+      console.log(res.data);
+
+      const addresses = res.data;
+      if (!addresses.some((item) => item.address === fromAdd)) {
+        var data = JSON.stringify([
+          {
+            address: fromAdd,
+          },
+        ]);
+
+        var config = {
+          method: "post",
+          url: `${process.env.API_URL}`,
+          headers: {
+            Authorization: `Bearer ${process.env.API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          data: data,
+        };
+        await axios(config)
+          .then((response) => {
+            console.log("Address Added");
+          })
+          .catch((err) => {
+            console.log(err.response.data.message);
+          });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  clientList.forEach((client) => {
+    client.send(JSON.stringify(req.body));
+  });
+  res.send("OK");
+});
+
 const server = app.listen(
   process.env.PORT || webSocketsServerPort,
   function () {

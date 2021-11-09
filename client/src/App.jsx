@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactFlow, { Background, Controls } from "react-flow-renderer";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+import axios from "axios";
 
 import "./App.css";
 import StickyHeadTable from "./components/data-table";
@@ -25,7 +26,7 @@ function App() {
     alignItems: "center",
     width: "150px",
     fontSize: "15px",
-    backgroundColor: "#ffffff"
+    backgroundColor: "#ffffff",
   };
 
   const [elements, setElements] = useState([]);
@@ -50,7 +51,7 @@ function App() {
       const fromAdd = data.from;
       const toAdd = data.to;
       const value = data.value;
-      const txn = data.txInfo.txHash
+      const txn = data.txInfo.txHash;
 
       setArrowid((id) => id + "a");
       setYpos((ypos) => ypos + 100);
@@ -79,7 +80,6 @@ function App() {
     }
   }
 
-
   const [mode, setMode] = useState(false);
   var source = mode
     ? "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAABmJLR0QA/wD/AP+gvaeTAAAAbElEQVRIiWNgGC6AEcbgLP3+loGBQYiKZr/93s0pgiLCWfr9PzE6yVHHRJLbyASjlpAEWJA5nGXfygnq+E+8OqyWMPxjEiSomfE/8erQwWgSHlmWjCZhktQNn4gfPpYgp663VI78t+Q5aTADAJRRNfRRTNkmAAAAAElFTkSuQmCC"
@@ -101,7 +101,12 @@ function App() {
         })
       );
 
-      setCurrentFlow({ from: inputval, to: outputval, amt: valueval, hash: txn });
+      setCurrentFlow({
+        from: inputval,
+        to: outputval,
+        amt: valueval,
+        hash: txn,
+      });
 
       setTableData((data) =>
         data.concat({
@@ -156,7 +161,12 @@ function App() {
         )
       );
 
-      setCurrentFlow({ from: inputval, to: outputval, amt: valueval, hash: txn });
+      setCurrentFlow({
+        from: inputval,
+        to: outputval,
+        amt: valueval,
+        hash: txn,
+      });
 
       setTableData((data) =>
         data.concat({
@@ -181,8 +191,8 @@ function App() {
       nodesConnectable={false}
       nodesDraggable={true}
     >
-      <Background gap={15}/>
-      <Controls/>
+      <Background gap={15} />
+      <Controls />
     </ReactFlow>,
   ];
 
@@ -197,11 +207,20 @@ function App() {
 
   const setBaseval = () => {
     const rootNode = baseref.current.value.toLowerCase();
+    const data = { add: rootNode };
+    axios
+      .post("https://salty-headland-19846.herokuapp.com/add", data)
+      .then((res) => {
+        console.log(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
     setElements([
       {
         id: rootNode,
-        type: "default", 
+        type: "default",
         preval: "",
         node: true,
         sourcePosition: "right",
@@ -219,23 +238,25 @@ function App() {
       },
     ]);
 
-    setTableData([])
+    setTableData([]);
 
     setAddlist([]);
-    setYpos(150)
+    setYpos(150);
   };
 
   return (
     <div className="screen">
-
-
       <div className="company">pArsiq-VisuALiser</div>
       <div className="control-area">
         <div className="search-bar">
           <input type="text" className="base-input" ref={baseref}></input>
           <button className="base-fetch" onClick={setBaseval}>
-            <div style={{border: "0px solid red", padding: "6px 0 0 2px"}}>
-            <img alt="start" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAABmJLR0QA/wD/AP+gvaeTAAACM0lEQVRIie2XP2hTURSHv5NW8t4LtWaQTq2BdlNH7SKog6uLiOJuXVWU1EUSXKpJq6t1Fqk6CSIqLg4idXVPi4itiMmguYlN73Hrewl9eX+S4uKZ7r3nd37fudz37uMJSWNO97nj5riKFABEtGbq7ieWZSuJjcQVjs838n86zi3EXgY50GNTR1nOdsxC40G+MTRwrtg+aq19ARQipLURzZz9Vc1+HhjsFs0UllVgIk6TwCbbeswseV/6iTKRnVke9UB/qlJSOKXKaRHKIPVAfkJH5WGkb7+ke6M5i8jHwNK6Wk62Ft31oM6ZNwXZ5j0w6TvrrLnnrYZ5R+w4cy44s8hcLxSgteCuiZUrXYvaXZsIrKKHA9Pv7Ur2bZi2OZZ9DfzYqUWPpAYLHPQn8hVEQ8UlsYjsPFBdtUnBiATztq+2V9NdmxC8h/HPwKNpityiOYHlMaBk9JK5631I6pFux5YSMAUcEivlNBbpwOJ/JFQkP3ywVeNPdCzSTXV/YNxMDxbWfCNm3OvNyTCpWzRTwIxfSi01WOFdl3YksxgqtrJE4O633bXJwC11ngGbgVbO92kzeDdvtHLO89RgqvIb9Fpfze5NXKUkA5wxYCreE1VKsZHKbVPxVqJ0sV6nVtUtg14ENkJFwjdUL7Sq7p04nrHfY1PxVkzOmQ7NbznTpuo9jeuX7ALpd273xYTmBgYPMf6D44VqZ9fxXoNVeRUYv0zjEfvfqQct2ZvtMwDtivMmjcNfV1+81hW6Ne4AAAAASUVORK5CYII="></img>          </div>
+            <div style={{ border: "0px solid red", padding: "6px 0 0 2px" }}>
+              <img
+                alt="start"
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAABmJLR0QA/wD/AP+gvaeTAAACM0lEQVRIie2XP2hTURSHv5NW8t4LtWaQTq2BdlNH7SKog6uLiOJuXVWU1EUSXKpJq6t1Fqk6CSIqLg4idXVPi4itiMmguYlN73Hrewl9eX+S4uKZ7r3nd37fudz37uMJSWNO97nj5riKFABEtGbq7ieWZSuJjcQVjs838n86zi3EXgY50GNTR1nOdsxC40G+MTRwrtg+aq19ARQipLURzZz9Vc1+HhjsFs0UllVgIk6TwCbbeswseV/6iTKRnVke9UB/qlJSOKXKaRHKIPVAfkJH5WGkb7+ke6M5i8jHwNK6Wk62Ft31oM6ZNwXZ5j0w6TvrrLnnrYZ5R+w4cy44s8hcLxSgteCuiZUrXYvaXZsIrKKHA9Pv7Ur2bZi2OZZ9DfzYqUWPpAYLHPQn8hVEQ8UlsYjsPFBdtUnBiATztq+2V9NdmxC8h/HPwKNpityiOYHlMaBk9JK5631I6pFux5YSMAUcEivlNBbpwOJ/JFQkP3ywVeNPdCzSTXV/YNxMDxbWfCNm3OvNyTCpWzRTwIxfSi01WOFdl3YksxgqtrJE4O633bXJwC11ngGbgVbO92kzeDdvtHLO89RgqvIb9Fpfze5NXKUkA5wxYCreE1VKsZHKbVPxVqJ0sV6nVtUtg14ENkJFwjdUL7Sq7p04nrHfY1PxVkzOmQ7NbznTpuo9jeuX7ALpd273xYTmBgYPMf6D44VqZ9fxXoNVeRUYv0zjEfvfqQct2ZvtMwDtivMmjcNfV1+81hW6Ne4AAAAASUVORK5CYII="
+              ></img>{" "}
+            </div>
           </button>
         </div>
         <div className="toggle-area">
@@ -253,19 +274,22 @@ function App() {
             false
           ) : (
             <div className="current-transaction">
-
               <div className="current-transaction-details">
-                <p><b>to : </b> {'\u00A0\u00A0\u00A0\u00A0'} {currentFlow.to}</p>
+                <p>
+                  <b>to : </b> {"\u00A0\u00A0\u00A0\u00A0"} {currentFlow.to}
+                </p>
               </div>
 
               <div className="current-transaction-details">
-                <b>from :</b> {'\u00A0\u00A0'} {currentFlow.from}
+                <b>from :</b> {"\u00A0\u00A0"} {currentFlow.from}
               </div>
 
               <div className="current-transaction-details">
-                <b>value :</b> {'\u00A0'} {currentFlow.amt}
+                <b>value :</b> {"\u00A0"} {currentFlow.amt}
               </div>
-              <div className="current-transaction-details">txnhash : {currentFlow.hash}</div>
+              <div className="current-transaction-details">
+                txnhash : {currentFlow.hash}
+              </div>
             </div>
           )}
         </div>
